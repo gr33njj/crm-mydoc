@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role     @default(STAFF)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  tasksCreated Task[]   @relation("CreatedTasks")
+  tasksAssigned Task[]  @relation("AssignedTasks")
+  comments     Comment[]
+  telegramId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  tasks     Task[]
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(OPEN)
+  priority    Priority   @default(NORMAL)
+  dueDate     DateTime?
+  
+  creatorId   String
+  creator     User     @relation("CreatedTasks", fields: [creatorId], references: [id])
+  
+  assigneeId  String?
+  assignee    User?    @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  
+  departmentId String?
+  department  Department? @relation(fields: [departmentId], references: [id])
+  
+  subTasks    SubTask[]
+  comments    Comment[]
+  files       File[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SubTask {
+  id          String   @id @default(uuid())
+  content     String
+  isCompleted Boolean  @default(false)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model File {
+  id        String   @id @default(uuid())
+  filename  String
+  path      String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  uploadedAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  HEAD_OF_DEPT
+  DOCTOR
+  STAFF
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  ARCHIVED
+}
+
+enum Priority {
+  CRITICAL
+  IMPORTANT
+  NORMAL
+  LOW
+}
