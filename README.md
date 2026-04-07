@@ -261,7 +261,7 @@ crm-mydoc/
 
 Для вопросов и поддержки:
 - Email: admin@it-mydoc.ru
-- Telegram: @your_telegram
+- Telegram: @gr33njj
 
 ## Лицензия
 
